@@ -21,6 +21,10 @@ export class UserService {
       return this.sanitizeUser(user);
     }
 
+    /**
+     * Generate Ethereum address for each user from the master mnemonic
+     * using the userId
+     */
     const ethAddress = generateAddressFromXPub(
       Currency.ETH,
       false,
@@ -45,8 +49,35 @@ export class UserService {
     return sanitized;
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll(page: string, limit: string) {
+    if (parseInt(limit, 10) > 200) {
+      throw new HttpException('Limit exceed 200', HttpStatus.BAD_REQUEST);
+    }
+    const pageOptions = {
+      page: parseInt(page, 10) || 0,
+      limit: parseInt(limit, 10) || 10,
+    };
+    const allUsers = await this.userModel
+      .find()
+      .skip(pageOptions.page * pageOptions.limit)
+      .limit(pageOptions.limit)
+      .exec();
+    if (allUsers.length === 0) {
+      throw new HttpException(`No user found`, HttpStatus.NOT_FOUND);
+    }
+    return { data: allUsers };
+  }
+
+  async findUsersByRole(role: string) {
+    const roleInt = parseInt(role, 10) || 0;
+    const users = await this.userModel.find({ userType: roleInt });
+    if (users.length === 0) {
+      throw new HttpException(
+        `No user with the role ${role} found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return users;
   }
 
   findOne(id: number) {

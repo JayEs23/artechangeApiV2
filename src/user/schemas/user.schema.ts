@@ -3,6 +3,12 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
+enum Role {
+  Investor,
+  Admin,
+  Issuer,
+  Broke,
+}
 @Schema({ versionKey: false })
 export class User {
   @Prop({ unique: true })
@@ -17,8 +23,8 @@ export class User {
   @Prop({ required: true })
   userName: string;
 
-  @Prop({ required: true })
-  userType: number;
+  @Prop({ required: true, enum: Role })
+  userType: Role;
 
   @Prop({ required: true })
   createdAt: Date;

@@ -12,6 +12,6 @@ export class CreateUserDto {
   @ApiProperty()
   userName: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: ['Investor', 'Admin', 'Issuer', 'Broker'] })
   userType: number;
 }

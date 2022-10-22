@@ -1,8 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
+import { ApiHeader } from '@nestjs/swagger';
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 
+@ApiHeader({
+  name: 'api-key',
+  description: 'api-key header',
+  required: true,
+})
 @Controller('asset')
 export class AssetController {
   constructor(private readonly assetService: AssetService) {}
@@ -12,23 +27,13 @@ export class AssetController {
     return this.assetService.create(createAssetDto);
   }
 
-  @Get()
-  findAll() {
-    return this.assetService.findAll();
+  @Get('/all-assets')
+  findAll(@Query('page') page: string, @Query('limit') limit: string) {
+    return this.assetService.findAll(page, limit);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.assetService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAssetDto: UpdateAssetDto) {
-    return this.assetService.update(+id, updateAssetDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.assetService.remove(+id);
   }
 }

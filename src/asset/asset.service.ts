@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -27,19 +27,27 @@ export class AssetService {
     return createdAsset;
   }
 
-  findAll() {
-    return `This action returns all asset`;
+  async findAll(page: string, limit: string) {
+    if (parseInt(limit, 10) > 200) {
+      throw new HttpException('Limit exceed 200', HttpStatus.BAD_REQUEST);
+    }
+    const pageOptions = {
+      page: parseInt(page, 10) || 0,
+      limit: parseInt(limit, 10) || 10,
+    };
+    const allAssets = await this.assetModel
+      .find()
+      .skip(pageOptions.page * pageOptions.limit)
+      .limit(pageOptions.limit)
+      .exec();
+    if (allAssets.length === 0) {
+      throw new HttpException(`No Asset found`, HttpStatus.NOT_FOUND);
+    }
+    return { data: allAssets };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} asset`;
-  }
-
-  update(id: number, updateAssetDto: UpdateAssetDto) {
-    return `This action updates a #${id} asset`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} asset`;
+  async findOne(id: number) {
+    const asset = await this.assetModel.findOne({ artId: id });
+    return asset;
   }
 }

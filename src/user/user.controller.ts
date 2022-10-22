@@ -11,12 +11,24 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from './schemas/user.schema';
+import { ApiHeader, ApiResponse } from '@nestjs/swagger';
 
+@ApiHeader({
+  name: 'api-key',
+  description: 'api-key header',
+  required: true,
+})
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'The record has been successfully created.',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
@@ -27,17 +39,7 @@ export class UserController {
   }
 
   @Get('users-by-role/:role')
-  findOne(@Param('role') role: string) {
-    return this.userService.findUsersByRole(role);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  findUsersByrole(@Param('role') role: Role) {
+    return this.userService.findUsersByRole(role.toString());
   }
 }

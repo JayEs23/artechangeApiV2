@@ -4,8 +4,9 @@ import { generateAddressFromXPub, Currency } from '@tatumio/tatum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Model } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { Role, User, UserDocument } from './schemas/user.schema';
 import config from 'src/utils/config';
+import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 @Injectable()
 export class UserService {
@@ -78,17 +79,5 @@ export class UserService {
       );
     }
     return users;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

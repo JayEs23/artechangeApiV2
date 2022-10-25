@@ -66,7 +66,9 @@ export class UserService {
     if (allUsers.length === 0) {
       throw new HttpException(`No user found`, HttpStatus.NOT_FOUND);
     }
-    return { data: allUsers };
+
+    const all = allUsers.map((user) => this.sanitizeUser(user));
+    return { data: all };
   }
 
   async findUsersByRole(role: string) {

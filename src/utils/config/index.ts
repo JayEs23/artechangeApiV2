@@ -8,5 +8,6 @@ export default {
   apiKey: process.env.API_KEY,
   blockchain: {
     xpub: process.env.XPUB,
+    infuraKey: process.env.INFURA_KEY,
   },
 };

@@ -7,11 +7,14 @@ import { Asset, AssetDocument } from './schemas/asset.schema';
 import AssetManagerV2Abi from '../abi/AssetManagerV2.json';
 import { ethers } from 'ethers';
 import config from 'src/utils/config';
+import { User, UserDocument } from 'src/user/schemas/user.schema';
+import { contentSecurityPolicy } from 'helmet';
 
 @Injectable()
 export class AssetService {
   constructor(
     @InjectModel(Asset.name) private readonly assetModel: Model<AssetDocument>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
   async create(createAssetDto: CreateAssetDto): Promise<Asset> {
@@ -30,66 +33,68 @@ export class AssetService {
     return createdAsset;
   }
 
-  async createAsset(createAssetDto: CreateAssetDto): Promise<Asset> {
-    const { artId } = createAssetDto;
-    const assetManagerAddress = '0x8CfDba8Eaf72f08606D63197E76887E670B38D41';
+  async createAsset(createAssetDto: CreateAssetDto) {
+    const { artId, issuerEmail } = createAssetDto;
+    let blockchainAsset;
+
+    // Polygon testnet contract
+    const assetManagerAddress = '0x1F32c68d80B4a4bB42BEC3639C0f9bf170167860';
     const provider = new ethers.providers.AlchemyProvider(
-      'goerli',
+      'maticmum',
       'N9Gpuw75XaGoVLAKCDfovvLDBqrhj3hq',
     );
 
-    const signer = new ethers.Wallet(
-      '0xb7737cb2e722b11841adda4dce8b2f04a7e4f308a766a8bcec882b0a59aa02cb',
-      provider,
-    );
+    const signer = new ethers.Wallet(config.blockchain.privateKey, provider);
     const assetManager = new ethers.Contract(
       assetManagerAddress,
       AssetManagerV2Abi,
       signer,
     );
 
-    const gasEstimate = await assetManager.estimateGas.mint(
-      {
-        tokenId: ethers.BigNumber.from('1000000000'),
-        name: 'art ex',
-        symbol: 'THY',
-        totalQuantity: ethers.BigNumber.from('1000000000'),
-        price: ethers.BigNumber.from('1000000000'),
-        issuer: '0x4d2833F8dba51811D6C6f3813F2DF4E1f6f06080',
-      },
-      { gasLimit: ethers.BigNumber.from('1000000000') },
-    );
-
-    console.log(gasEstimate);
-    console.log(
-      await assetManager.mint(
-        {
-          tokenId: ethers.BigNumber.from('1000000000'),
-          name: 'art ex',
-          symbol: 'THY',
-          totalQuantity: ethers.BigNumber.from('1000000000'),
-          price: ethers.BigNumber.from('1000000000'),
-          issuer: '0x8CfDba8Eaf72f08606D63197E76887E670B38D41',
-        },
-        {
-          gasLimit: ethers.BigNumber.from('10000000000000'),
-          gasPrice: ethers.BigNumber.from('2100'),
-        },
-      ),
-    );
-
     const asset = await this.assetModel.findOne({ artId });
+
     if (asset) {
+      blockchainAsset = await assetManager.tokenShares(createAssetDto.artId);
+      const { _id, ...assetVal } = asset.toObject();
+      const result = {
+        owner: blockchainAsset.owner,
+        sharesContract: blockchainAsset.sharesContract,
+      };
       // throw new HttpException('user already exists', HttpStatus.BAD_REQUEST);
-      return asset;
+      return { ...assetVal, ...result };
     }
+
+    const issuerObj = await this.userModel.findOne({
+      email: issuerEmail,
+    });
+
+    if (!issuerObj) {
+      throw new HttpException('Issuer does not exist', HttpStatus.NOT_FOUND);
+    }
+
+    const ar = {
+      tokenId: createAssetDto.artId,
+      name: createAssetDto.artTitle,
+      symbol: createAssetDto.artSymbol,
+      totalQuantity: createAssetDto.numberOftokens,
+      price: createAssetDto.pricePerToken,
+      issuer: issuerObj.ethereumAddress,
+    };
+    const assetHash = await assetManager.mint(ar);
+    await assetHash.wait(2);
+    blockchainAsset = await assetManager.tokenShares(createAssetDto.artId);
 
     const createdAsset = await new this.assetModel({
       ...createAssetDto,
       createdAt: new Date(),
     }).save();
 
-    return createdAsset;
+    const blochainResult = {
+      owner: blockchainAsset.owner,
+      sharesContract: blockchainAsset.sharesContract,
+    };
+    const { _id, ...assetValues } = createdAsset.toObject();
+    return { ...assetValues, ...blochainResult };
   }
 
   async findAll(page: string, limit: string) {

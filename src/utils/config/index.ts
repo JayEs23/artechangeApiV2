@@ -9,5 +9,6 @@ export default {
   blockchain: {
     xpub: process.env.XPUB,
     infuraKey: process.env.INFURA_KEY,
+    privateKey: process.env.PRIVATE_KEY,
   },
 };

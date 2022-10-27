@@ -4,14 +4,20 @@ import { Model } from 'mongoose';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { Asset, AssetDocument } from './schemas/asset.schema';
+import AssetManagerV2Abi from '../abi/AssetManagerV2.json';
+import { ethers } from 'ethers';
+import config from 'src/utils/config';
+import { User, UserDocument } from 'src/user/schemas/user.schema';
+import { contentSecurityPolicy } from 'helmet';
 
 @Injectable()
 export class AssetService {
   constructor(
     @InjectModel(Asset.name) private readonly assetModel: Model<AssetDocument>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(createAssetDto: CreateAssetDto) {
+  async create(createAssetDto: CreateAssetDto): Promise<Asset> {
     const { artId } = createAssetDto;
     const asset = await this.assetModel.findOne({ artId });
     if (asset) {
@@ -25,6 +31,70 @@ export class AssetService {
     }).save();
 
     return createdAsset;
+  }
+
+  async createAsset(createAssetDto: CreateAssetDto) {
+    const { artId, issuerEmail } = createAssetDto;
+    let blockchainAsset;
+
+    // Polygon testnet contract
+    const assetManagerAddress = '0x1F32c68d80B4a4bB42BEC3639C0f9bf170167860';
+    const provider = new ethers.providers.AlchemyProvider(
+      'maticmum',
+      'N9Gpuw75XaGoVLAKCDfovvLDBqrhj3hq',
+    );
+
+    const signer = new ethers.Wallet(config.blockchain.privateKey, provider);
+    const assetManager = new ethers.Contract(
+      assetManagerAddress,
+      AssetManagerV2Abi,
+      signer,
+    );
+
+    const asset = await this.assetModel.findOne({ artId });
+
+    if (asset) {
+      blockchainAsset = await assetManager.tokenShares(createAssetDto.artId);
+      const { _id, ...assetVal } = asset.toObject();
+      const result = {
+        owner: blockchainAsset.owner,
+        sharesContract: blockchainAsset.sharesContract,
+      };
+      // throw new HttpException('user already exists', HttpStatus.BAD_REQUEST);
+      return { ...assetVal, ...result };
+    }
+
+    const issuerObj = await this.userModel.findOne({
+      email: issuerEmail,
+    });
+
+    if (!issuerObj) {
+      throw new HttpException('Issuer does not exist', HttpStatus.NOT_FOUND);
+    }
+
+    const ar = {
+      tokenId: createAssetDto.artId,
+      name: createAssetDto.artTitle,
+      symbol: createAssetDto.artSymbol,
+      totalQuantity: createAssetDto.numberOftokens,
+      price: createAssetDto.pricePerToken,
+      issuer: issuerObj.ethereumAddress,
+    };
+    const assetHash = await assetManager.mint(ar);
+    await assetHash.wait(2);
+    blockchainAsset = await assetManager.tokenShares(createAssetDto.artId);
+
+    const createdAsset = await new this.assetModel({
+      ...createAssetDto,
+      createdAt: new Date(),
+    }).save();
+
+    const blochainResult = {
+      owner: blockchainAsset.owner,
+      sharesContract: blockchainAsset.sharesContract,
+    };
+    const { _id, ...assetValues } = createdAsset.toObject();
+    return { ...assetValues, ...blochainResult };
   }
 
   async findAll(page: string, limit: string) {

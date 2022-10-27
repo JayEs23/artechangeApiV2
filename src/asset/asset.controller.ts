@@ -24,7 +24,7 @@ export class AssetController {
 
   @Post()
   create(@Body() createAssetDto: CreateAssetDto) {
-    return this.assetService.create(createAssetDto);
+    return this.assetService.createAsset(createAssetDto);
   }
 
   @Get('/all-assets')

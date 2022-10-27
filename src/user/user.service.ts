@@ -68,8 +68,8 @@ export class UserService {
     }
 
     const all = allUsers.map((user) => this.sanitizeUser(user));
-    const usersData = { ...all };
-    return { data: usersData };
+
+    return { status: 'success', statusCode: 200, data: { ...all } };
   }
 
   async findUsersByRole(role: string) {

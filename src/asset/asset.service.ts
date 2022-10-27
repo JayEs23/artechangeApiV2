@@ -113,7 +113,7 @@ export class AssetService {
     if (allAssets.length === 0) {
       throw new HttpException(`No Asset found`, HttpStatus.NOT_FOUND);
     }
-    return { data: allAssets };
+    return { data: { ...allAssets } };
   }
 
   async findOne(id: number) {

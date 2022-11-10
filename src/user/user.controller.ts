@@ -54,6 +54,7 @@ export class UserController {
   @HttpCode(200)
   @Post('/paystack/webhook')
   webhook(@Body() data) {
+    console.log(data);
     return this.userService.webhook(data);
   }
 }

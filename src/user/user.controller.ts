@@ -7,12 +7,15 @@ import {
   Param,
   Delete,
   Query,
+  Res,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Role } from './schemas/user.schema';
 import { ApiHeader, ApiResponse } from '@nestjs/swagger';
+import { VerifyUserDto } from './dto/verify-user.dto';
 
 @ApiHeader({
   name: 'api-key',
@@ -41,5 +44,16 @@ export class UserController {
   @Get('users-by-role/:role')
   findUsersByrole(@Param('role') role: Role) {
     return this.userService.findUsersByRole(role.toString());
+  }
+
+  @Post('/bank-verification')
+  verifyUser(@Body() verifyUserDto: VerifyUserDto) {
+    return this.userService.verifyUser(verifyUserDto);
+  }
+
+  @HttpCode(200)
+  @Post('/paystack/webhook')
+  webhook(@Body() data) {
+    return this.userService.webhook(data);
   }
 }

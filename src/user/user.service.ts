@@ -7,11 +7,17 @@ import { Model } from 'mongoose';
 import { Role, User, UserDocument } from './schemas/user.schema';
 import config from 'src/utils/config';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom, map, Observable, tap } from 'rxjs';
+import https from 'https';
+import { VerifyUserDto } from './dto/verify-user.dto';
+import { createECDH } from 'crypto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    private readonly httpService: HttpService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -82,5 +88,70 @@ export class UserService {
       );
     }
     return users;
+  }
+
+  async verifyUser(userDetails: VerifyUserDto): Promise<any> {
+    const createUserParams = JSON.stringify({
+      email: userDetails.email,
+      first_name: userDetails.firstname,
+      last_name: userDetails.lastname,
+      phone: userDetails.phone,
+    });
+
+    const options = {
+      hostname: 'api.paystack.co',
+      port: 443,
+      path: '/customer/CUS_z7wcqorxf26ztts/identification',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_TEST_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    let customerCode;
+    try {
+      const resp = await lastValueFrom(
+        this.httpService
+          .post('https://api.paystack.co/customer', createUserParams, options)
+          .pipe(map((resp) => resp.data)),
+      );
+      customerCode = resp.data.customer_code;
+    } catch (error) {
+      return error.response.data;
+    }
+    const params = JSON.stringify({
+      country: 'NG',
+      type: 'bank_account',
+      account_number: userDetails.accountNumber,
+      bvn: userDetails.bvn,
+      bank_code: userDetails.bankCode,
+      first_name: userDetails.firstname,
+      last_name: userDetails.lastname,
+    });
+
+    try {
+      const resp = await lastValueFrom(
+        this.httpService
+          .post(
+            `https://api.paystack.co/customer/${customerCode}/identification`,
+            params,
+            options,
+          )
+          .pipe(map((resp) => resp.data)),
+      );
+      return resp;
+    } catch (error) {
+      return error.response.data;
+    }
+  }
+  async webhook(data) {
+    if (data?.event?.inludes('customeridentification')) {
+      this.userModel.findOneAndUpdate(
+        { email: data.data.email },
+        { verification: data },
+        { new: true },
+      );
+    }
+    return data;
   }
 }

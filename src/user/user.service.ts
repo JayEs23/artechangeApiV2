@@ -145,12 +145,13 @@ export class UserService {
     }
   }
   async webhook(data) {
-    if (data?.event?.inludes('customeridentification')) {
-      this.userModel.findOneAndUpdate(
+    if (data?.event?.startsWith('customeridentification')) {
+      const update = await this.userModel.findOneAndUpdate(
         { email: data.data.email },
         { verification: data },
         { new: true },
       );
+      console.log(update);
     }
     return data;
   }

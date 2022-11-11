@@ -48,6 +48,7 @@ export class UserController {
 
   @Post('/bank-verification')
   verifyUser(@Body() verifyUserDto: VerifyUserDto) {
+    console.log(verifyUserDto);
     return this.userService.verifyUser(verifyUserDto);
   }
 

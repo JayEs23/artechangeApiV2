@@ -104,7 +104,7 @@ export class UserService {
       path: '/customer/CUS_z7wcqorxf26ztts/identification',
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_TEST_KEY}`,
+        Authorization: `Bearer ${process.env.PAYSTACK_LIVE_KEY}`,
         'Content-Type': 'application/json',
       },
     };

@@ -84,10 +84,10 @@ export class AssetService {
     };
     const assetHash = await assetManager.mint(ar);
     console.log({ assetHash });
-    const txReceipt = await assetHash.wait(1);
+    // const txReceipt = await assetHash.wait(1);
     blockchainAsset = await assetManager.tokenShares(createAssetDto.artId);
     try {
-      if (txReceipt.status) {
+      if (assetHash) {
         const createdAsset = await new this.assetModel({
           ...createAssetDto,
           createdAt: new Date(),

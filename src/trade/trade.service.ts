@@ -48,9 +48,9 @@ export class TradeService {
         blockchainAddress,
         ethers.utils.parseEther(amount),
       );
-      const receipt = await tx.wait(1);
+      // const receipt = await tx.wait(1);
 
-      if (receipt.status) {
+      if (tx) {
         const response = {
           hash: tx.hash,
           investorAddress: blockchainAddress,
@@ -160,9 +160,9 @@ export class TradeService {
         ethers.utils.parseEther(tokenAmount),
         1,
       );
-      const receipt = await tx.wait(1);
-      console.log({ receipt });
-      if (receipt.status) {
+      // const receipt = await tx.wait(1);
+
+      if (tx) {
         const response = {
           hash: tx.hash,
           issuerAddress,

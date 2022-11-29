@@ -76,25 +76,40 @@ export class AssetService {
       tokenId: createAssetDto.artId,
       name: createAssetDto.artTitle,
       symbol: createAssetDto.artSymbol,
-      totalQuantity: createAssetDto.numberOftokens,
+      totalQuantity: ethers.utils.parseEther(
+        createAssetDto.numberOftokens.toString(),
+      ),
       price: createAssetDto.pricePerToken,
       issuer: issuerObj.ethereumAddress,
     };
     const assetHash = await assetManager.mint(ar);
-    await assetHash.wait(2);
+    console.log({ assetHash });
+    const txReceipt = await assetHash.wait(1);
     blockchainAsset = await assetManager.tokenShares(createAssetDto.artId);
+    try {
+      if (txReceipt.status) {
+        const createdAsset = await new this.assetModel({
+          ...createAssetDto,
+          createdAt: new Date(),
+        }).save();
 
-    const createdAsset = await new this.assetModel({
-      ...createAssetDto,
-      createdAt: new Date(),
-    }).save();
-
-    const blochainResult = {
-      owner: blockchainAsset.owner,
-      sharesContract: blockchainAsset.sharesContract,
-    };
-    const { _id, ...assetValues } = createdAsset.toObject();
-    return { ...assetValues, ...blochainResult };
+        const blochainResult = {
+          owner: blockchainAsset.owner,
+          sharesContract: blockchainAsset.sharesContract,
+        };
+        const { _id, ...assetValues } = createdAsset.toObject();
+        return { ...assetValues, ...blochainResult };
+      } else {
+        return {
+          Error: 'Unable to create asset',
+        };
+      }
+    } catch (err) {
+      throw new HttpException(
+        'Unable to create asset',
+        HttpStatus.EXPECTATION_FAILED,
+      );
+    }
   }
 
   async findAll(page: string, limit: string) {

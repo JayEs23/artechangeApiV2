@@ -11,6 +11,7 @@ import { TradeService } from './trade.service';
 import { FundWalletDto } from './dto/fund-wallet.dto';
 import { UpdateTradeDto } from './dto/update-trade.dto';
 import { ApiHeader } from '@nestjs/swagger';
+import { BuySharesDto } from './dto/buy-shares.dto';
 
 @ApiHeader({
   name: 'api-key',
@@ -26,9 +27,9 @@ export class TradeController {
     return this.tradeService.fundWallet(createTradeDto);
   }
 
-  @Get()
-  findAll() {
-    return this.tradeService.findAll();
+  @Post('/buy/shares')
+  buyShares(@Body() buySharesDto: BuySharesDto) {
+    return this.tradeService.buyNFTShares(buySharesDto);
   }
 
   @Get(':id')

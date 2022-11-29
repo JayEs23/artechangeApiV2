@@ -76,9 +76,7 @@ export class AssetService {
       tokenId: createAssetDto.artId,
       name: createAssetDto.artTitle,
       symbol: createAssetDto.artSymbol,
-      totalQuantity: ethers.utils.parseEther(
-        createAssetDto.numberOftokens.toString(),
-      ),
+      totalQuantity: ethers.utils.parseEther(createAssetDto.numberOftokens),
       price: createAssetDto.pricePerToken,
       issuer: issuerObj.ethereumAddress,
     };

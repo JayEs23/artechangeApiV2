@@ -32,7 +32,7 @@ export class CreateAssetDto {
   pricePerToken: number;
 
   @ApiProperty()
-  numberOfTokens: string;
+  numberOftokens: string;
 
   @ApiProperty()
   numberOfTokensForSale: string;

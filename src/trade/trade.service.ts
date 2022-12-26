@@ -125,14 +125,6 @@ export class TradeService {
         .sendTransaction(signedTransaction)
         .then((tx) => {
           console.log({ tx });
-          // {
-          //    // These will match the above values (excluded properties are zero)
-          //    "nonce", "gasLimit", "gasPrice", "to", "value", "data", "chainId"
-          //
-          //    // These will now be present
-          //    "from", "hash", "r", "s", "v"
-          //  }
-          // Hash:
         })
         .catch((err) => {
           console.log({ err });

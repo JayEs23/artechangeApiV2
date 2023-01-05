@@ -145,14 +145,16 @@ export class TradeService {
         investorAddress,
         artId,
       } = buySharesDto;
-      console.log({ investorAddress });
+
       const tx = await assetManager.buyShares(
         artId,
         issuerAddress,
         ethers.utils.parseEther(tokenAmount),
         1,
+        { gasPrice: 1500000016, gasLimit: 120000 },
       );
-      // const receipt = await tx.wait(1);
+
+      const receipt = await tx.wait(1);
 
       if (tx) {
         const response = {
@@ -168,7 +170,7 @@ export class TradeService {
         };
       }
     } catch (err) {
-      console.log({ seeError: err });
+      console.log({ seeError: err }, 'a***********************');
       throw new HttpException(
         `Transaction failed: ${err}`,
         HttpStatus.NOT_IMPLEMENTED,

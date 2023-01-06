@@ -119,17 +119,17 @@ export class TradeService {
 
     const trans = masterWallet.signTransaction(transaction);
 
-    trans.then((signedTransaction) => {
-      console.log({ signedTransaction });
-      provider
-        .sendTransaction(signedTransaction)
-        .then((tx) => {
-          console.log({ tx });
-        })
-        .catch((err) => {
-          console.log({ err });
-        });
-    });
+    // trans.then((signedTransaction) => {
+    //   console.log({ signedTransaction });
+    //   provider
+    //     .sendTransaction(signedTransaction)
+    //     .then((tx) => {
+    //       console.log({ tx });
+    //     })
+    //     .catch((err) => {
+    //       console.log({ err });
+    //     });
+    // });
 
     const signer = new ethers.Wallet(userPKey, provider);
     const assetManager = new ethers.Contract(

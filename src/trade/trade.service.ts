@@ -31,7 +31,7 @@ export class TradeService {
     }
     // Polygon testnet contract
     const assetManagerAddress = '0x1F32c68d80B4a4bB42BEC3639C0f9bf170167860';
-    const provider = new ethers.providers.AlchemyProvider(
+    const provider = new ethers.providers.InfuraProvider(
       'maticmum',
       'N9Gpuw75XaGoVLAKCDfovvLDBqrhj3hq',
     );

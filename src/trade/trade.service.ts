@@ -151,7 +151,7 @@ export class TradeService {
         issuerAddress,
         ethers.utils.parseEther(tokenAmount),
         1,
-        { gasPrice: 1500000016, gasLimit: 120000 },
+        // { gasPrice: 1500000016, gasLimit: 120000 },
       );
 
       const receipt = await tx.wait(1);

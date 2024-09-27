@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
@@ -33,6 +34,9 @@ export class UserController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   create(@Body() createUserDto: CreateUserDto) {
+    console.log("Registering User",createUserDto);
+    const ti = this.userService.create(createUserDto);
+    console.log("response",ti);
     return this.userService.create(createUserDto);
   }
 

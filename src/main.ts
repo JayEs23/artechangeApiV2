@@ -14,6 +14,6 @@ async function bootstrap() {
   app.useGlobalFilters(new ExceptionsFilter());
   app.use(helmet());
   SwaggerDoc.setup(app);
-  await app.listen(3000);
+  await app.listen(3005);
 }
 bootstrap();

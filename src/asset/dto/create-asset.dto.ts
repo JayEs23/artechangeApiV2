@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAssetDto {
@@ -32,7 +33,7 @@ export class CreateAssetDto {
   pricePerToken: number;
 
   @ApiProperty()
-  numberOftokens: string;
+  numberOftokens: number;
 
   @ApiProperty()
   numberOfTokensForSale: string;

@@ -10,7 +10,7 @@ export class Asset {
   artistName: string;
 
   @Prop({ required: true, unique: true })
-  artId: string;
+  artId: number;
 
   @Prop({ required: true })
   artTitle: string;

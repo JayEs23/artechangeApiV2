@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AssetService } from './asset.service';
 import { AssetController } from './asset.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Asset, AssetSchema } from './schemas/asset.schema';
 import { User, UserSchema } from 'src/user/schemas/user.schema';
+import { LogMiddleware } from './log.middleware';
 
 @Module({
   controllers: [AssetController],
@@ -15,4 +17,10 @@ import { User, UserSchema } from 'src/user/schemas/user.schema';
     ]),
   ],
 })
-export class AssetModule {}
+export class AssetModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LogMiddleware)
+      .forRoutes({ path: 'asset/create', method: RequestMethod.POST });
+  }
+}
